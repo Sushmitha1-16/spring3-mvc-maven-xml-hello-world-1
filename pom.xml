@@ -8,11 +8,13 @@
 	<name>spring3 mvc maven</name>
 
 	<properties>
-		<jdk.version>1.6</jdk.version>
-		<spring.version>3.2.13.RELEASE</spring.version>
-		<jstl.version>1.2</jstl.version>
-		
-	</properties>
+	    <jdk.version>11</jdk.version>
+	    <maven.compiler.source>${jdk.version}</maven.compiler.source>
+	    <maven.compiler.target>${jdk.version}</maven.compiler.target>
+	    <spring.version>3.2.13.RELEASE</spring.version>
+	    <jstl.version>1.2</jstl.version>
+</properties>
+
 
 	<dependencies>
 
@@ -34,13 +36,13 @@
 
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
-				<configuration>
-					<source>${jdk.version}</source>
-					<target>${jdk.version}</target>
-				</configuration>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-compiler-plugin</artifactId>
+			    <version>3.11.0</version>
+			    <configuration>
+			        <source>${maven.compiler.source}</source>
+			        <target>${maven.compiler.target}</target>
+			    </configuration>
 			</plugin>
 
 			<plugin>
