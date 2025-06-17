@@ -43,18 +43,14 @@
                 }
             }
         }
-
-        stage('Upload to Nexus') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: "${NEXUS_CREDENTIAL_ID}", passwordVariable: 'NEXUS_PASS', usernameVariable: 'NEXUS_USER')]) {
-                    sh """
-                        echo "Deploying to Nexus with user: ${NEXUS_USER}"
-                        mvn deploy -DaltDeploymentRepository=${NEXUS_REPOSITORY}::default::${NEXUS_URL}/repository/${NEXUS_REPOSITORY} \
-                        -Dnexus.username=${NEXUS_USER} -Dnexus.password=${NEXUS_PASS}
-                    """
-                }
-            }
+stage('Upload to Nexus') {
+    steps {
+        configFileProvider([configFile(fileId: 'maven-settings', variable: 'MAVEN_SETTINGS')]) {
+            sh 'mvn deploy -s $MAVEN_SETTINGS -DaltDeploymentRepository=nexus::default::http://3.147.65.25:8082/repository/maven-snapshot123'
         }
+    }
+}
+
 
         stage('Slack Notification') {
             steps {
