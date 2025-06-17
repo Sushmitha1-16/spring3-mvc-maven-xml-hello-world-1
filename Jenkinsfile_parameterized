@@ -2,7 +2,7 @@
     agent any
 
     parameters {
-        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build')
+        string(name: 'BRANCH_NAME', defaultValue: 'master', description: 'Branch to build')
     }
 
     tools {
@@ -18,9 +18,15 @@
     }
 
     stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
         stage('Git Clone') {
             steps {
-                git branch: "${params.BRANCH_NAME}", url: 'https://github.com/betawins/spring3-mvc-maven-xml-hello-world-1.git'
+                git branch: "${params.BRANCH_NAME}", url: 'https://github.com/Sushmitha1-16/spring3-mvc-maven-xml-hello-world-1.git'
             }
         }
 
@@ -51,7 +57,11 @@
 
         stage('Slack Notification') {
             steps {
-                slackSend (channel: '#jenkins-status', message: "Build Completed for branch: ${params.BRANCH_NAME}", color: 'good')
+                slackSend (
+                    channel: '#jenkins-status',
+                    message: "Build Completed for branch: ${params.BRANCH_NAME}",
+                    color: 'good'
+                )
             }
         }
     }
