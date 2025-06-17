@@ -5,7 +5,7 @@
 
     <groupId>com.ncodeit</groupId>
     <artifactId>ncodeit-hello-world</artifactId>
-    <version>3.0</version>
+    <version>3.0-SNAPSHOT</version> <!-- ✅ Must be a SNAPSHOT version -->
     <packaging>war</packaging>
     <name>spring3 mvc maven</name>
 
@@ -27,45 +27,53 @@
         </dependency>
     </dependencies>
 
-   <build>
-    <plugins>
-        <!-- ✅ Java Compiler Plugin with Java 21 -->
-        <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-compiler-plugin</artifactId>
-      <version>3.10.1</version> <!-- Use a modern version -->
-      <configuration>
-        <source>17</source>   <!-- Change to 21 if your dependencies are compatible -->
-        <target>17</target>
-      </configuration>
-    </plugin>
+    <!-- ✅ Add this block for Nexus snapshot deployment -->
+    <distributionManagement>
+        <snapshotRepository>
+            <id>nexus</id>
+            <url>http://3.147.65.25:8082/repository/maven-snapshot123</url>
+        </snapshotRepository>
+    </distributionManagement>
 
-        <!-- ✅ Jetty Plugin -->
-        <plugin>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-maven-plugin</artifactId>
-            <version>9.2.11.v20150529</version>
-            <configuration>
-                <scanIntervalSeconds>10</scanIntervalSeconds>
-                <webApp>
-                    <contextPath>/spring3</contextPath>
-                </webApp>
-            </configuration>
-        </plugin>
+    <build>
+        <plugins>
+            <!-- ✅ Java Compiler Plugin with Java 21 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <source>17</source> <!-- You can set 21 if your project supports it -->
+                    <target>17</target>
+                </configuration>
+            </plugin>
 
-        <!-- ✅ Eclipse Plugin -->
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-eclipse-plugin</artifactId>
-            <version>2.9</version>
-            <configuration>
-                <downloadSources>true</downloadSources>
-                <downloadJavadocs>true</downloadJavadocs>
-                <wtpversion>2.0</wtpversion>
-                <wtpContextName>spring3</wtpContextName>
-            </configuration>
-        </plugin>
-    </plugins>
-</build>
+            <!-- ✅ Jetty Plugin -->
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.2.11.v20150529</version>
+                <configuration>
+                    <scanIntervalSeconds>10</scanIntervalSeconds>
+                    <webApp>
+                        <contextPath>/spring3</contextPath>
+                    </webApp>
+                </configuration>
+            </plugin>
+
+            <!-- ✅ Eclipse Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-eclipse-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <downloadSources>true</downloadSources>
+                    <downloadJavadocs>true</downloadJavadocs>
+                    <wtpversion>2.0</wtpversion>
+                    <wtpContextName>spring3</wtpContextName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
