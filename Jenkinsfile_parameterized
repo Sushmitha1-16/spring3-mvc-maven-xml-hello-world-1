@@ -1,99 +1,57 @@
-pipeline {
- 
+ pipeline {
     agent any
- 
+
     parameters {
-    gitParameter branchFilter: 'origin/(.*)', defaultValue: 'origin/master', name: 'BRANCH', type: 'PT_BRANCH'
-         
-        booleanParam(defaultValue: false, description: '', name: 'mvn_build')
-        booleanParam(defaultValue: false, description: '', name: 'publish_to_nexus')
-  
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build')
     }
+
     tools {
-        // Note: this should match with the tool name configured in your jenkins instance (JENKINS_URL/configureTools/)
-        maven "Maven"
-        
+        maven 'maven-3.9.4'
+        jdk 'java21'
     }
+
     environment {
-        // This can be nexus3 or nexus2
-        NEXUS_VERSION = "nexus3"
-        // This can be http or https
-        NEXUS_PROTOCOL = "http"
-        // Where your Nexus is running
-        NEXUS_URL = "13.233.66.167:8081/"
-        // Repository where we will upload the artifact
-        NEXUS_REPOSITORY = "ncodeit-helloworld"
-        // Jenkins credential id to authenticate to Nexus OSS
-        NEXUS_CREDENTIAL_ID = "nexus_credentials"
+        NEXUS_CREDENTIAL_ID = 'nexus-token'
+        SONARQUBE_ENV = 'MySonarQube'
+        NEXUS_REPOSITORY = 'maven-snapshot123'
+        NEXUS_URL = 'http://3.147.65.25:8082'
     }
+
     stages {
-        stage("clone code") {
+        stage('Git Clone') {
             steps {
-                script {
-                    
-				    // Let's clone the source
-                    git branch: "${params.BRANCH}", url: 'https://github.com/betawins/parametirize-job.git';
-                   
-                } 
+                git branch: "${params.BRANCH_NAME}", url: 'https://github.com/betawins/spring3-mvc-maven-xml-hello-world-1.git'
             }
         }
-        stage("mvn build") {
+
+        stage('Maven Compile') {
             steps {
-                script {
-				if (params.mvn_build) {
-                    // If you are using Windows then you should use "bat" step
-                    // Since unit testing is out of the scope we skip them
-                    sh '/usr/share/maven/bin/mvn -Dmaven.test.failure.ignore clean package'
-					} else {
-                                echo "no build"
-                            }
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                    sh 'mvn sonar:sonar'
                 }
             }
         }
-        stage("publish to nexus") {
+
+        stage('Upload to Nexus') {
             steps {
-                script {
-				if (params.publish_to_nexus) {
-                    // Read POM xml file using 'readMavenPom' step , this step 'readMavenPom' is included in: https://plugins.jenkins.io/pipeline-utility-steps
-                    pom = readMavenPom file: "pom.xml";
-                    // Find built artifact under target folder
-                    filesByGlob = findFiles(glob: "target/*.${pom.packaging}");
-                    // Print some info from the artifact found
-                    echo "${filesByGlob[0].name} ${filesByGlob[0].path} ${filesByGlob[0].directory} ${filesByGlob[0].length} ${filesByGlob[0].lastModified}"
-                    // Extract the path from the File found
-                    artifactPath = filesByGlob[0].path;
-                    // Assign to a boolean response verifying If the artifact name exists
-                    artifactExists = fileExists artifactPath;
-                    if(artifactExists) {
-                        echo "*** File: ${artifactPath}, group: ${pom.groupId}, packaging: ${pom.packaging}, version ${pom.version}";
-                        nexusArtifactUploader(
-                            nexusVersion: NEXUS_VERSION,
-                            protocol: NEXUS_PROTOCOL,
-                            nexusUrl: NEXUS_URL,
-                            groupId: pom.groupId,
-                            version: '${BUILD_NUMBER}',
-                            repository: NEXUS_REPOSITORY,
-                            credentialsId: NEXUS_CREDENTIAL_ID,
-                            artifacts: [
-                                // Artifact generated such as .jar, .ear and .war files.
-                                [artifactId: pom.artifactId,
-                                classifier: '',
-                                file: artifactPath,
-                                type: pom.packaging],
-                                // Lets upload the pom.xml file for additional information for Transitive dependencies
-                                [artifactId: pom.artifactId,
-                                classifier: '',
-                                file: "pom.xml",
-                                type: "pom"]
-                            ]
-                        );
-                    } else {
-                        error "*** File: ${artifactPath}, could not be found";
-                    }
-					} else {
-                                echo "no build"
-                            }
+                withCredentials([usernamePassword(credentialsId: "${NEXUS_CREDENTIAL_ID}", passwordVariable: 'NEXUS_PASS', usernameVariable: 'NEXUS_USER')]) {
+                    sh """
+                        mvn deploy -DaltDeploymentRepository=${NEXUS_REPOSITORY}::default::${NEXUS_URL}/repository/${NEXUS_REPOSITORY} \
+                        -Dnexus.username=${NEXUS_USER} -Dnexus.password=${NEXUS_PASS}
+                    """
                 }
+            }
+        }
+
+        stage('Slack Notification') {
+            steps {
+                slackSend (channel: '#jenkins-status', message: "Build Completed for branch: ${params.BRANCH_NAME}", color: 'good')
             }
         }
     }
