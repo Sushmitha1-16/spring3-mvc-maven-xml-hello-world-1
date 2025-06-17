@@ -1,4 +1,4 @@
- pipeline {
+pipeline {
     agent any
 
     parameters {
@@ -12,7 +12,7 @@
 
     environment {
         NEXUS_CREDENTIAL_ID = 'nexus-token'
-        SONARQUBE_ENV = 'MySonarQube'
+        SONARQUBE_ENV = 'sonar' // ✅ Updated to match actual SonarQube installation
         NEXUS_REPOSITORY = 'maven-snapshot123'
         NEXUS_URL = 'http://3.147.65.25:8082'
     }
@@ -59,10 +59,20 @@
             steps {
                 slackSend (
                     channel: '#jenkins-status',
-                    message: "Build Completed for branch: ${params.BRANCH_NAME}",
+                    message: "✅ Build completed successfully for branch: ${params.BRANCH_NAME}",
                     color: 'good'
                 )
             }
+        }
+    }
+
+    post {
+        failure {
+            slackSend (
+                channel: '#jenkins-status',
+                message: "❌ Build FAILED for branch: ${params.BRANCH_NAME}",
+                color: 'danger'
+            )
         }
     }
 }
