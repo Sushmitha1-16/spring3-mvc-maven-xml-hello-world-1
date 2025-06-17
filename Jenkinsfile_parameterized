@@ -1,4 +1,4 @@
-pipeline {
+ pipeline {
     agent any
 
     parameters {
@@ -12,7 +12,7 @@ pipeline {
 
     environment {
         NEXUS_CREDENTIAL_ID = 'nexus-token'
-        SONARQUBE_ENV = 'sonar' // ✅ Updated to match actual SonarQube installation
+        SONARQUBE_ENV = 'sonar' // Matches SonarQube installation name
         NEXUS_REPOSITORY = 'maven-snapshot123'
         NEXUS_URL = 'http://3.147.65.25:8082'
     }
@@ -48,6 +48,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: "${NEXUS_CREDENTIAL_ID}", passwordVariable: 'NEXUS_PASS', usernameVariable: 'NEXUS_USER')]) {
                     sh """
+                        echo "Deploying to Nexus with user: ${NEXUS_USER}"
                         mvn deploy -DaltDeploymentRepository=${NEXUS_REPOSITORY}::default::${NEXUS_URL}/repository/${NEXUS_REPOSITORY} \
                         -Dnexus.username=${NEXUS_USER} -Dnexus.password=${NEXUS_PASS}
                     """
