@@ -11,7 +11,6 @@
     }
 
     environment {
-        NEXUS_CREDENTIAL_ID = 'nexus-token'
         SONARQUBE_ENV = 'sonar' // Matches SonarQube installation name
         NEXUS_REPOSITORY = 'maven-snapshot123'
         NEXUS_URL = 'http://3.147.65.25:8082'
@@ -43,14 +42,34 @@
                 }
             }
         }
-stage('Upload to Nexus') {
-    steps {
-        configFileProvider([configFile(fileId: 'maven-settings', variable: 'MAVEN_SETTINGS')]) {
-            sh 'mvn deploy -s $MAVEN_SETTINGS -DaltDeploymentRepository=nexus::default::http://3.147.65.25:8082/repository/maven-snapshot123'
-        }
-    }
-}
 
+        stage('Create settings.xml') {
+            steps {
+                sh '''
+                    mkdir -p maven-settings
+                    cat <<EOF > maven-settings/settings.xml
+<settings>
+  <servers>
+    <server>
+      <id>nexus</id>
+      <username>admin</username>
+      <password>nexus@123456</password>
+    </server>
+  </servers>
+</settings>
+EOF
+                '''
+            }
+        }
+
+        stage('Upload to Nexus') {
+            steps {
+                sh '''
+                    mvn deploy -s maven-settings/settings.xml \
+                    -DaltDeploymentRepository=nexus::default::http://3.147.65.25:8082/repository/maven-snapshot123
+                '''
+            }
+        }
 
         stage('Slack Notification') {
             steps {
