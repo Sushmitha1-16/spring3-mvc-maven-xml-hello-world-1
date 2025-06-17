@@ -11,7 +11,8 @@
 
     <properties>
         <jdk.version>21</jdk.version>
-        <maven.compiler.release>${jdk.version}</maven.compiler.release>
+        <maven.compiler.source>${jdk.version}</maven.compiler.source>
+        <maven.compiler.target>${jdk.version}</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -30,16 +31,15 @@
 
     <build>
         <plugins>
-            <!-- ✅ Java 21 Compiler Plugin -->
+            <!-- ✅ Java Compiler Plugin -->
             <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.10.1</version> <!-- or latest -->
-            <configuration>
-                <source>11</source>  <!-- Use 11, 17, or 21 -->
-                <target>11</target>
-            </configuration>
-        </plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <release>${jdk.version}</release>
+                </configuration>
+            </plugin>
 
             <!-- ✅ Jetty Plugin -->
             <plugin>
@@ -67,7 +67,7 @@
                 </configuration>
             </plugin>
 
-            <!-- ✅ Optional Spring Boot Plugin -->
+            <!-- ✅ Spring Boot Plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
